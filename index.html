@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Calculadora de Wilks</title>
+    <!-- Incluimos el favicon para el modo oscuro -->
+    <link rel="icon" href="sam.png" type="image/png" media="(prefers-color-scheme: dark)"> 
+    <!-- Incluimos el favicon para el modo claro -->
+    <link rel="icon" href="sam1.png" type="image/png" media="(prefers-color-scheme: light)">
+  
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #1E1E1E;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #FFD700;
+            font-weight: bold;
+        }
+        .input-group input[type="number"]::-webkit-inner-spin-button,
+        .input-group input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        input[type="number"], select {
+            width: 60%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2C2C2C;
+            color: #E0E0E0;
+            font-size: 1em;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .gender-selector {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        input[type="number"], select, input[type="text"], input[type="password"] {
+            width: 60%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2C2C2C;
+            color: #E0E0E0;
+            font-size: 1em;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .calculate-btn, .reset-btn, .login-btn, .register-btn, .back-to-login-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            border: 2px solid #160536;
+            margin-right: 10px;
+        }
+        
+        .reset-btn {
+            margin-right: 0;
+        }
+
+
+
+        .back-to-login-btn {
+            margin-right: 0;
+        }
+
+        .calculate-btn, .reset-btn, .login-btn, .register-btn, .back-to-login-btn {
+            background-color: #160536;
+            color: #ae83ff;
+        }
+
+        .calculate-btn:hover, .reset-btn:hover, .login-btn:hover, .register-btn:hover, .back-to-login-btn:hover {
+            background-color: #250a57;
+            color: #ffffff;
+        }
+        
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            color: #E0E0E0;
+            border-radius: 8px; /* Bordes redondeados para la tabla */
+            overflow: hidden; /* Para ocultar bordes */
+        }
+
+        table, th, td {
+            border: 1px solid #333; /* Color de borde actualizado */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #3A3A3A;
+            font-weight: bold;
+        }   
+
+
+
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #2C2C2C;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+
+        .history {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #1F1F1F;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+
+        .history p {
+            margin: 5px 0;
+            color: #E0E0E0;
+        }
+
+        .history .wilks-score {
+            color: #FFD700; /* Color amarillo para el puntaje de Wilks */
+            font-weight: bold;
+        }
+
+        .separator {
+            border-top: 1px solid #FFD700;
+            margin: 10px 0;
+        }
+        
+        #calculatorContainer {
+            display: none; /* Ocultar el contenedor de la calculadora inicialmente */
+        }
+
+        #registerFormContainer {
+            display: none; /* Ocultar el contenedor de registro inicialmente */
+        }
+        .delete-history-btn {
+        padding: 12px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        background-color: #160536;
+        color: #ae83ff;
+        transition: background-color 0.3s;
+        width: 100%; /* Hacer que el botón ocupe toda la anchura del contenedor */
+        }
+
+        .delete-history-btn:hover {
+            background-color: #250a57;
+            color: #ffffff;
+        }
+        /* Estilo para ocultar el botón en otras secciones */
+        #deleteAccountsBtn {
+            display: none; /* Ocultar inicialmente */
+        }
+
+        /* Asegúrate de mostrar el botón solo en el contenedor de registro */
+        #registerFormContainer #deleteAccountsBtn {
+            display: block; /* Mostrar solo en el formulario de registro */
+        }
+
+        /* Estilo general del contenedor del ranking */
+        #ranking-container {
+            background-color: #1E1E1E; /* Color de fondo igual al de otros contenedores */
+            border-radius: 8px; /* Bordes redondeados */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra similar */
+            padding: 20px; /* Espaciado interno */
+            margin: 20px; /* Espaciado externo */
+            max-width: 600px; /* Ancho máximo del contenedor */
+            transition: all 0.3s ease; /* Transición suave al abrir/cerrar */
+        }
+
+        /* Estilo del título del ranking */
+        #ranking-container h2 {
+            text-align: center; /* Centrar el título */
+            color: #FFD700; /* Color del texto amarillo */
+            font-size: 1.5em; /* Ajustar tamaño de fuente */
+            margin-bottom: 15px; /* Margen inferior */
+        }
+
+        /* Estilo de la lista del ranking */
+        #ranking-list {
+            list-style-type: none; /* Sin viñetas */
+            padding: 0; /* Sin padding */
+            margin: 0; /* Sin margin */
+        }
+
+        /* Estilo para cada elemento de la lista */
+        #ranking-list li {
+            background-color: #2C2C2C; /* Color de fondo similar a otros elementos de la aplicación */
+            border: 1px solid #333; /* Borde sutil */
+            border-radius: 5px; /* Bordes redondeados */
+            padding: 15px; /* Espaciado interno */
+            margin: 10px 0; /* Espaciado entre elementos */
+            display: flex; /* Usar flexbox para alinear texto */
+            justify-content: space-between; /* Espacio entre nombre y puntaje */
+            transition: background-color 0.3s; /* Transición suave al pasar el cursor */
+        }
+
+        /* Resaltar usuarios con historial */
+        #ranking-list li.history {
+            background-color: #30193a; /* Fondo más claro para usuarios con historial */
+            border: 1px solid #b15ed4; /* Borde amarillo para destacar */
+        }
+
+        /* Cambiar el color del texto para el nombre del usuario */
+        #ranking-list li span.username {
+            color: #FFD700; /* Cambiar a un color verde brillante para el nombre de usuario */
+            font-weight: bold; /* Negrita para el nombre */
+        }
+
+        /* Cambiar el color del puntaje para que sea diferente */
+        #ranking-list li span.score {
+            color: #ffffff; /* Color amarillo para el puntaje */
+        }
+
+        /* Efecto al pasar el cursor sobre los elementos de la lista */
+        #ranking-list li:hover {
+            background-color: #30193a; /* Color más oscuro al pasar el cursor */
+            border: 1px solid #FFD700; /* Borde amarillo para destacar */
+        }
+
+        /* Estilo para el botón de cerrar */
+        #ranking-container button {
+            display: block; /* Que ocupe toda la línea */
+            margin: 20px auto 0; /* Centrar el botón y margen superior */
+            padding: 12px; /* Espaciado interno igual que otros botones */
+            background-color: #160536; /* Color de fondo igual a otros botones */
+            color: #ae83ff; /* Color del texto igual a otros botones */
+            border: 2px solid #160536; /* Borde igual que otros botones */
+            border-radius: 5px; /* Bordes redondeados */
+            cursor: pointer; /* Cambiar cursor al pasar sobre el botón */
+            font-size: 1.1em; /* Tamaño de fuente igual que otros botones */
+            font-weight: bold; /* Grosor igual que otros botones */
+            transition: background-color 0.3s, border-color 0.3s; /* Transición suave al cambiar el color */
+            width: 100%; /* Botón ocupa toda la anchura del contenedor */
+        }
+
+        /* Efecto al pasar el cursor sobre el botón */
+        #ranking-container button:hover {
+            background-color: #250a57; /* Color más oscuro al pasar el cursor */
+            color: #ffffff; /* Cambiar color de texto al pasar el cursor */
+            border: 2px solid #160536; /* Cambiar color del borde en hover */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="loginFormContainer">
+        <h1>Iniciar Sesión</h1>
+        <label for="username">Usuario</label>
+        <input type="text" id="username" required placeholder="Usuario">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" required placeholder="Contraseña">
+        <div class="button-group">
+            <button type="button" class="login-btn" onclick="login()">Iniciar Sesión</button>
+            <button type="button" class="register-btn" onclick="showRegister()">Registrar</button>
+        </div>
+    </div>
+
+    <div class="container" id="registerFormContainer">
+        <h1>Registrar Usuario</h1>
+        <label for="newUsername">Nuevo Usuario</label>
+        <input type="text" id="newUsername" required placeholder="Nuevo Usuario">
+        <label for="newPassword">Nueva Contraseña</label>
+        <input type="password" id="newPassword" required placeholder="Nueva Contraseña">
+        <p id="registrationMessage" style="color: #FFD700;"></p>
+        <div class="button-group">
+            <button type="button" class="register-btn" onclick="register()">Registrar</button>
+            <button type="button" class="back-to-login-btn" onclick="showLogin()">Volver a Iniciar Sesión</button>
+        </div>  
+        <div class="button-group" style="margin-top: 20px;">
+            <button id="deleteAccountsBtn" class="register-btn" onclick="openDeleteAccountsForm()">Borrar todas las cuentas</button>
+            <button id="rankingBtn" class="back-to-login-btn" onclick="openRanking()">Cuentas</button>
+        </div>
+        </div>
+    
+        
+        
+<!-- Contenedor de Ranking -->
+<div class="hidden" id="ranking-container" style="display: none;">
+    <h2>Ranking de Usuarios</h2>
+    <ul id="ranking-list">
+        <li class="history"><span class="username">Usuario 1</span><span class="score">Puntaje: 150</span></li>
+        <li><span class="username">Usuario 2</span><span class="score">Puntaje: 100</span></li>
+        <li class="history"><span class="username">Usuario 3</span><span class="score">Puntaje: 200</span></li>
+        <li><span class="username">Usuario 4</span><span class="score">Puntaje: 80</span></li>
+    </ul>
+    <button onclick="closeRanking()">Cerrar</button>
+</div>
+
+
+<div id="deleteAccountsForm" style="display: none; background: #1E1E1E; padding: 10px; border: 1px solid #333; border-radius: 5px;">
+        <h4 style="color: #FFD700;">Borrar todas las cuentas</h4>
+        <input type="password" id="deletePassword" placeholder="Introduce la contraseña" style="width: calc(100% - 20px); padding: 10px; border: 1px solid #333; border-radius: 5px; background-color: #2C2C2C; color: #E0E0E0;" />
+        <div class="button-group">
+            <button class="calculate-btn" onclick="deleteAllAccounts()">Confirmar</button>
+            <button class="reset-btn" onclick="closeDeleteAccountsForm()">Cancelar</button>
+        </div>              
+</div>
+    <div class="container" id="calculatorContainer">
+        <h1>Calculadora de Wilks</h1>
+        <form id="wilksForm">
+            <label for="gender">Género</label>
+            <select id="gender" class="gender-selector" required>
+                <option value="male">Hombre</option>
+                <option value="female">Mujer</option>
+            </select>
+
+            <label for="bodyWeight">Peso corporal</label>
+            <div class="input-group">
+                <input type="number" id="bodyWeight" required placeholder="Kg">
+            </div>
+
+            <label for="benchPress">Press de banca</label>
+            <div class="input-group">
+                <input type="number" id="benchPress" required placeholder="Kg">
+                <input type="number" id="benchReps" required placeholder="Reps" min="1" style="width: 35%; margin-left: 10px;">
+            </div>
+
+            <label for="squat">Sentadilla</label>
+            <div class="input-group">
+                <input type="number" id="squat" required placeholder="Kg">
+                <input type="number" id="squatReps" required placeholder="Reps" min="1" style="width: 35%; margin-left: 10px;">
+            </div>
+
+            <label for="deadlift">Peso muerto</label>
+            <div class="input-group">
+                <input type="number" id="deadlift" required placeholder="Kg">
+                <input type="number" id="deadliftReps" required placeholder="Reps" min="1" style="width: 35%; margin-left: 10px;">
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="calculate-btn" onclick="calculateWilks()">Calcular</button>
+                <button type="button" class="reset-btn" onclick="resetForm()">Limpiar</button>
+            </div>
+        </form>
+
+        <!-- Sección para el resultado -->
+        <div id="result" class="result"></div>
+
+        <!-- Tabla de niveles de Wilks -->
+        <h2>Niveles de Wilks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nivel</th>
+                    <th>Puntaje de Wilks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Principiante</td>
+                    <td>120</td>
+                </tr>
+                <tr>
+                    <td>Novato</td>
+                    <td>200</td>
+                </tr>
+                <tr>
+                    <td>Intermedio</td>
+                    <td>238</td>
+                </tr>
+                <tr>
+                    <td>Avanzado</td>
+                    <td>326</td>
+                </tr>
+                <tr>
+                    <td>Élite</td>
+                    <td>414</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Sección para el historial de Wilks -->
+        <h2>Historial</h2>
+        <div id="history" class="history"></div>
+        <h2>Gráfica de Puntajes de Wilks</h2>
+        <canvas id="wilksChart" width="400" height="200"></canvas>
+        <button type="button" class="delete-history-btn" onclick="deleteHistory()">Borrar Historial</button>
+    </div>
+
+    <script>
+        
+
+        let currentUser = null;
+
+function showLogin() {
+    document.getElementById('loginFormContainer').style.display = 'block';
+    document.getElementById('calculatorContainer').style.display = 'none';
+    document.getElementById('registerFormContainer').style.display = 'none';
+}
+
+function showRegister() {
+    document.getElementById('registerFormContainer').style.display = 'block';
+    document.getElementById('loginFormContainer').style.display = 'none';
+    document.getElementById('calculatorContainer').style.display = 'none';
+}
+
+function showCalculator() {
+    document.getElementById('calculatorContainer').style.display = 'block';
+    document.getElementById('loginFormContainer').style.display = 'none';
+    document.getElementById('registerFormContainer').style.display = 'none';
+    displayHistory();
+}
+
+function register() {
+    const username = document.getElementById('newUsername').value;
+    const password = document.getElementById('newPassword').value;
+
+    if (!username || !password) {
+        alert('Por favor, completa todos los campos.');
+        return;
+    }
+
+    if (localStorage.getItem(username)) {
+        document.getElementById('registrationMessage').innerText = "El usuario ya existe.";
+    } else {
+        const userInfo = { password: password, history: [] };
+        localStorage.setItem(username, JSON.stringify(userInfo));
+        document.getElementById('registrationMessage').innerText = "Usuario registrado exitosamente.";
+        resetRegisterForm();
+    }
+}
+
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    if (!username || !password) {
+        alert('Por favor, completa todos los campos.');
+        return;
+    }
+
+    const userInfo = JSON.parse(localStorage.getItem(username));
+
+    if (userInfo && userInfo.password === password) {
+        currentUser = username;
+        showCalculator();
+    } else {
+        alert('Usuario o contraseña incorrectos.');
+    }
+}
+
+// Tabla de porcentajes para cada número de repeticiones
+const repPercentages = {
+    1: 100, 2: 97, 3: 94, 4: 92, 5: 89, 6: 86, 7: 83, 8: 81, 9: 78, 10: 75,
+    11: 73, 12: 71, 13: 70, 14: 68, 15: 67, 16: 65, 17: 64, 18: 62.5, 19: 61, 20: 60,
+    21: 59, 22: 58, 23: 57, 24: 56, 25: 55, 26: 54, 27: 53, 28: 52, 29: 51, 30: 50
+};
+
+function calculate1RM(weight, reps) {
+    // Verificar que el número de repeticiones esté en el rango soportado
+    if (reps < 1 || reps > 30) {
+        return "El número de repeticiones debe estar entre 1 y 30";
+    }
+
+    // Obtener el porcentaje asociado al número de repeticiones
+    const percentage = repPercentages[reps];
+
+    // Calcular el 1RM usando la fórmula: (peso dado / porcentaje) * 100
+    const oneRepMax = (weight / (percentage / 100)).toFixed(1); // Redondear a un decimal
+
+    return parseFloat(oneRepMax); // Asegura que sea un número y no un string
+}
+
+
+
+function calculateWilks() {
+    const gender = document.getElementById('gender').value;
+    const bodyWeight = parseFloat(document.getElementById('bodyWeight').value);
+    const benchPress = parseFloat(document.getElementById('benchPress').value);
+    const benchReps = parseFloat(document.getElementById('benchReps').value);
+    const squat = parseFloat(document.getElementById('squat').value);
+    const squatReps = parseFloat(document.getElementById('squatReps').value);
+    const deadlift = parseFloat(document.getElementById('deadlift').value);
+    const deadliftReps = parseFloat(document.getElementById('deadliftReps').value);
+
+    if (isNaN(bodyWeight) || isNaN(benchPress) || isNaN(benchReps) || isNaN(squat) || isNaN(squatReps) || isNaN(deadlift) || isNaN(deadliftReps)) {
+        alert('Por favor, completa todos los campos.');
+        return;
+    }
+
+    const bench1RM = calculate1RM(benchPress, benchReps);
+    const squat1RM = calculate1RM(squat, squatReps);
+    const deadlift1RM = calculate1RM(deadlift, deadliftReps);
+    const total1RM = bench1RM + squat1RM + deadlift1RM;
+
+    const wilksCoefficients = {
+        male: [-216.0475144, 16.2606339, -0.002388645, -0.00113732, 7.01863E-06, -1.291E-08],
+        female: [594.31747775582, -27.23842536447, 0.82112226871, -0.00930733913, 4.731582E-05, -9.054E-08]
+    };
+
+    const wilksCoefficient = wilksCoefficients[gender];
+    const totalCoefficient = wilksCoefficient[0] +
+        wilksCoefficient[1] * bodyWeight +
+        wilksCoefficient[2] * Math.pow(bodyWeight, 2) +
+        wilksCoefficient[3] * Math.pow(bodyWeight, 3) +
+        wilksCoefficient[4] * Math.pow(bodyWeight, 4) +
+        wilksCoefficient[5] * Math.pow(bodyWeight, 5);
+
+    const wilksScore = (total1RM * 500) / totalCoefficient;
+    let level;
+    if (wilksScore < 120) level = "N/A";
+    else if (wilksScore < 200) level = "Principiante";
+    else if (wilksScore < 238) level = "Novato";
+    else if (wilksScore < 326) level = "Intermedio";
+    else if (wilksScore < 414) level = "Avanzado";
+    else level = "Élite";
+
+    document.getElementById('result').innerHTML = `<p>Puntaje de Wilks: <span class="wilks-score">${wilksScore.toFixed(2)}</span> (${level})</p>`;
+    saveHistory(gender, bodyWeight, benchPress, benchReps, squat, squatReps, deadlift, deadliftReps, wilksScore, level);
+    displayHistory();
+}
+
+function saveHistory(gender, bodyWeight, benchPress, benchReps, squat, squatReps, deadlift, deadliftReps, wilksScore, level) {
+    if (currentUser) {
+        let userInfo = JSON.parse(localStorage.getItem(currentUser)) || { password: '', history: [] };
+        userInfo.history.push({
+            date: new Date().toLocaleString(),
+            gender,
+            bodyWeight,
+            benchPress,
+            benchReps,
+            squat,
+            squatReps,
+            deadlift,
+            deadliftReps,
+            wilksScore,
+            level
+        });
+        localStorage.setItem(currentUser, JSON.stringify(userInfo));
+    }
+}
+
+function deleteHistory() {
+    if (confirm("¿Estás seguro de que deseas borrar el historial? Esta acción no se puede deshacer.")) {
+        if (currentUser) {
+            let userInfo = JSON.parse(localStorage.getItem(currentUser));
+            userInfo.history = [];
+            localStorage.setItem(currentUser, JSON.stringify(userInfo));
+            displayHistory();
+            alert("Historial borrado exitosamente.");
+        }
+    }
+}
+function openDeleteAccountsForm() {
+    // Mostrar solo el formulario de eliminar cuentas
+    document.getElementById('deleteAccountsForm').style.display = 'block';
+
+    // Ocultar los demás contenedores
+    document.getElementById('loginFormContainer').style.display = 'none';
+    document.getElementById('registerFormContainer').style.display = 'none';
+    document.getElementById('calculatorContainer').style.display = 'none';
+    document.getElementById('rankingContainer').style.display = 'none';
+}
+
+function closeDeleteAccountsForm() {
+    // Ocultar el formulario de eliminar cuentas
+    document.getElementById('deleteAccountsForm').style.display = 'none';
+
+    // Volver a mostrar el contenedor de registro u otro
+    document.getElementById('registerFormContainer').style.display = 'block';
+    document.getElementById('deletePassword').value = ''; // Limpiar el campo de entrada de contraseña
+}
+
+function openRanking() {
+    // Mostrar solo el contenedor del ranking
+    document.getElementById('ranking-container').style.display = 'block';
+
+    // Ocultar otros contenedores
+    document.getElementById('loginFormContainer').style.display = 'none';
+    document.getElementById('registerFormContainer').style.display = 'none'; // Asegúrate de que esté oculto
+    document.getElementById('calculatorContainer').style.display = 'none';
+    document.getElementById('deleteAccountsForm').style.display = 'none';
+
+    // Cargar el ranking
+    loadRanking();
+}
+
+
+function closeRanking() {
+    // Ocultar el contenedor del ranking
+    document.getElementById('ranking-container').style.display = 'none';
+
+    // Mostrar el contenedor de registro
+    document.getElementById('registerFormContainer').style.display = 'block'; // Muestra el formulario de registro
+}
+
+
+
+function loadRanking() {
+    const rankingList = document.getElementById('ranking-list'); // Asegúrate de que este ID exista en tu HTML
+    rankingList.innerHTML = ''; // Limpiar cualquier ranking existente
+
+    const rankings = []; // Arreglo para almacenar los usuarios y sus puntajes
+
+    // Verificar si hay usuarios en localStorage
+    if (localStorage.length === 0) {
+        const noUsersMessage = document.createElement('li');
+        noUsersMessage.textContent = 'No hay usuarios registrados.';
+        noUsersMessage.style.fontStyle = 'italic'; // Opcional: estilo para el mensaje
+        rankingList.appendChild(noUsersMessage);
+        return; // Salir de la función si no hay usuarios
+    }
+
+    // Obtener todos los usuarios de localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+        const username = localStorage.key(i);
+        const userInfo = JSON.parse(localStorage.getItem(username));
+
+        if (userInfo && userInfo.history.length > 0) {
+            const highestWilksScore = Math.max(...userInfo.history.map(entry => entry.wilksScore));
+            rankings.push({ username, highestWilksScore: highestWilksScore.toFixed(2) }); // Formatear el puntaje a 2 decimales
+        } else {
+            rankings.push({ username, highestWilksScore: 'Sin historial' });
+        }
+    }
+
+    // Ordenar por puntaje de Wilks de mayor a menor
+    rankings.sort((a, b) => {
+        if (b.highestWilksScore === 'Sin historial') return -1; // Mover usuarios sin historial al final
+        if (a.highestWilksScore === 'Sin historial') return 1;
+        return b.highestWilksScore - a.highestWilksScore;
+    });
+
+    // Insertar los elementos de ranking en el contenedor
+    rankings.forEach(ranking => {
+        const listItem = document.createElement('li');
+
+        // Crear elementos span para el nombre de usuario y el puntaje
+        const usernameSpan = document.createElement('span');
+        usernameSpan.classList.add('username'); // Agregar la clase para el nombre de usuario
+        usernameSpan.textContent = ranking.username; // Asignar el nombre de usuario
+
+        const scoreSpan = document.createElement('span');
+        scoreSpan.classList.add('score'); // Agregar la clase para el puntaje
+        scoreSpan.textContent = ` - Puntaje Máximo de Wilks: ${ranking.highestWilksScore}`; // Asignar el puntaje
+
+        // Agregar los spans al elemento de lista
+        listItem.appendChild(usernameSpan);
+        listItem.appendChild(scoreSpan);
+
+        // Si el usuario tiene historial, agregar la clase "history"
+        if (ranking.highestWilksScore !== 'Sin historial') {
+            listItem.classList.add('history'); // Resaltar usuarios con historial
+        }
+
+        rankingList.appendChild(listItem);
+    });
+}
+
+
+
+
+
+function deleteAllAccounts() {
+    const password = document.getElementById('deletePassword').value;
+
+    // Validación de la contraseña (puedes definir tu propia contraseña aquí)
+    const adminPassword = "admin123"; // Cambia esto a tu contraseña deseada
+
+    if (password === adminPassword) {
+        localStorage.clear(); // Borrar todas las cuentas
+        alert('Todas las cuentas han sido borradas exitosamente.');
+        closeDeleteAccountsForm(); // Cerrar el formulario
+        document.getElementById('deletePassword').value = ''; // Limpiar el campo de contraseña
+        
+        // Mostrar el formulario de registro
+        document.getElementById('registerFormContainer').style.display = 'block'; // Mostrar el contenedor del formulario de registro
+    } else {
+        alert('Contraseña incorrecta.'); // Mensaje de error
+    }
+}
+
+// Modificar la función showRegister para que el contenedor de ranking esté disponible
+function showRegister() {
+    document.getElementById('loginFormContainer').style.display = 'none';
+    document.getElementById('registerFormContainer').style.display = 'block';
+    document.getElementById('calculatorContainer').style.display = 'none';
+    document.getElementById('deleteAccountsBtn').style.display = 'block';
+    document.getElementById('rankingContainer').style.display = 'block'; // Mostrar el contenedor de ranking al mostrar el registro
+}
+
+function showLogin() {
+    document.getElementById("loginFormContainer").style.display = "block";
+    document.getElementById("registerFormContainer").style.display = "none";
+    document.getElementById("calculatorContainer").style.display = "none";
+    document.getElementById("deleteAccountsBtn").style.display = "none"; // Ocultar botón al volver a inicio de sesión
+}
+function resetForm() {
+    // Reiniciar los campos del formulario a sus valores iniciales
+    document.getElementById('wilksForm').reset(); // Resetea el formulario
+
+    // Opcional: Establecer el género a 'male' como valor predeterminado
+    document.getElementById('gender').value = 'male'; // Cambia a 'female' si es necesario
+
+    // Limpiar el resultado mostrado
+    document.getElementById('result').innerHTML = ''; 
+}
+
+let wilksChart;
+
+function displayHistory() {
+    const historyDiv = document.getElementById('history');
+    historyDiv.innerHTML = '';
+
+    if (currentUser) {
+        const userInfo = JSON.parse(localStorage.getItem(currentUser));
+
+        if (userInfo && userInfo.history && userInfo.history.length > 0) {
+            const historyData = []; // Crear un arreglo para almacenar los datos históricos de la gráfica
+            
+            userInfo.history.forEach(entry => {
+                historyDiv.innerHTML += `
+                    <div>
+                        <p>Fecha: ${entry.date}</p>
+                        <p>Género: ${entry.gender.charAt(0).toUpperCase() + entry.gender.slice(1)}</p>
+                        <p>Peso corporal: ${entry.bodyWeight} Kg</p>
+                        <p>Press de banca: ${entry.benchPress} Kg (${entry.benchReps} reps)</p>
+                        <p>Sentadilla: ${entry.squat} Kg (${entry.squatReps} reps)</p>
+                        <p>Peso muerto: ${entry.deadlift} Kg (${entry.deadliftReps} reps)</p>
+                        <p>Puntaje de Wilks: <span class="wilks-score">${entry.wilksScore.toFixed(2)}</span> (${entry.level})</p>
+                        <div class="separator"></div>
+                    </div>
+                `;
+                
+                // Añadir datos al arreglo para la gráfica
+                historyData.push({ date: entry.date, score: entry.wilksScore });
+            });
+
+            // Llamar a la función drawChart con el historial para mostrar la gráfica
+            drawChart(historyData);
+        } else {
+            historyDiv.innerHTML = '<p>No hay historial disponible.</p>';
+            drawChart([]); // Llamar a drawChart con datos vacíos si no hay historial
+        }
+    }
+}
+
+function drawChart(history) {
+    const labels = history.map(entry => entry.date); // Fechas para el eje X
+    const scores = history.map(entry => entry.score); // Puntajes de Wilks para el eje Y
+
+    const ctx = document.getElementById('wilksChart').getContext('2d');
+
+    if (wilksChart) {
+        wilksChart.destroy(); // Destruir el gráfico anterior si ya existe
+    }
+
+    wilksChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length > 0 ? labels : ['Sin datos'], // Muestra 'Sin datos' si no hay etiquetas
+            datasets: [{
+                label: 'Puntaje de Wilks',
+                data: scores.length > 0 ? scores : [0], // Muestra un 0 si no hay puntajes
+                borderColor: '#FFD700', // Cambiar a amarillo #FFD700
+                backgroundColor: 'rgba(255, 215, 0, 0.2)', // Fondo semi-transparente en amarillo
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Fecha'
+                    },
+                    ticks: {
+                        display: false, // Ocultar las etiquetas del eje X
+                        autoSkip: true,
+                        maxTicksLimit: 10 // Limita la cantidad de etiquetas en el eje X
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Puntaje de Wilks'
+                    },
+                    beginAtZero: true,
+                    min: 0, // Límite mínimo, si es necesario
+                    max: 500 // Límite máximo, si es necesario
+                }
+            }
+        }
+    });
+}
+
+
+function clearHistory() {
+    if (currentUser) {
+        const userInfo = JSON.parse(localStorage.getItem(currentUser));
+        userInfo.history = []; // Limpiar el historial
+        localStorage.setItem(currentUser, JSON.stringify(userInfo)); // Guardar el historial vacío
+        displayHistory(); // Mostrar el historial (que ahora estará vacío)
+        drawChart([]); // Dibujar la gráfica con un conjunto de datos vacío
+    }
+}
+
+</script>
+</body>
+</html>
